@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}
+Check Out
+{% endblock title %}
+{% block content %}
+
+<h1>Bienvenue</h1>
+
+{% endblock content %}
+{% block body %}
+{% load static %}
+
+<!-- ======= Portfolio Section ======= -->
+<section id="portfolio" class="portfolio">
+  <div class="container">
+    {% for message in messages %}
+    <div
+      class="alert alert-{{ message.tags }} alert-dismissible fade show"
+      role="alert"
+    >
+      <strong>{{ message }}</strong>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></button>
+    </div>
+    {% endfor %}
+
+    <div class="section-title">
+      <h2>Bienvenue</h2>
+      <h3>Page de Paiement</h3>
+    </div>
+
+    <!-- Message de confirmation, affiché après la commande réussie -->
+    {% if thank %}
+      <div class="alert alert-success">
+          <strong>Commande reçue !</strong> Nous vous contacterons bientôt pour le paiement et la livraison.
+      </div>
+    {% endif %}
+
+    <div class="container">
+      <div class="col my-4">
+        <h2>Étape 1 - Mon Super Panier Express - Vérifiez les Articles de Votre Panier</h2>
+        <div class="my-4">
+          <ul class="list-group" id="items"></ul>
+
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mt-3">
+              <li class="breadcrumb-item active" aria-current="page">Le Total de Votre Panier Est <b>Total. <span id="totalprice"></span> <span id="amount"></span></b>. Entrez vos coordonnées ci-dessous et passez votre commande. Merci d'utiliser Shopping Cart</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div class="col my-4">
+        <h2>Étape 2 - Entrez vos coordonnées ci-dessous et passez votre commande. Merci d'utiliser Panier:</h2>
+        <form method="post" action="/checkout/">{% csrf_token %}
+          <input type="hidden" name="itemsJson" id="itemsJson">
+          <input type="hidden" id="amt" name="amt">
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="inputname">Nom</label>
+              <input type="text" class="form-control mt-3" id="name" name="name" placeholder="Nom" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="inputEmail4">Email</label>
+              <input type="email" class="form-control mt-3" id="email" name="email" placeholder="Email" value="{{ user.email }}" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="inputAddress">Adresse</label>
+              <input type="text" class="form-control mt-3" id="address1" name="address1" placeholder="1234 Rue Principale" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="inputAddress">Ligne d'Adresse 2</label>
+              <input type="text" class="form-control mt-3" id="address2" name="address2" placeholder="1234 Rue Principale" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="inputCity">Ville</label>
+              <input type="text" class="form-control mt-3" id="city" name="city" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="inputState">État</label>
+              <input type="text" class="form-control mt-3" id="state" name="state" placeholder="Entrez l'État" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="inputZip">Code Postal</label>
+              <input type="number" class="form-control mt-3" id="zip_code" name="zip_code" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="inputZip">Numéro de Téléphone</label>
+              <input type="number" class="form-control mt-3" id="phone" name="phone" required>
+            </div>
+          </div>
+
+          <button id="btn" type="submit" class="btn btn-success btn-sm btn-block col-md-4">Passer la Commande</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+    <script>
+      if (localStorage.getItem('cart') == null) {
+        var cart = {};
+      } else {
+        cart = JSON.parse(localStorage.getItem('cart'));
+      }
+      console.log(cart);
+
+      var sum = 0;
+      var totalPrice = 0;
+      if ($.isEmptyObject(cart)) {
+        mystr = `<p>Your cart is empty, please add some items to your cart before checking out!</p>`;
+        $('#items').append(mystr);
+      } else {
+        for (item in cart) {
+          let name = cart[item][1];
+          let qty = cart[item][0];
+          let itemPrice = cart[item][2];
+          sum = sum + qty;
+          totalPrice = totalPrice + qty * itemPrice;
+
+          mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                   ${name}
+                   <div><b> Price : ${itemPrice}</b></div>
+                   <span class="badge badge-primary badge-pill">${qty}</span>
+               </li>`;
+          $('#items').append(mystr);
+        }
+        document.getElementById('totalprice').innerHTML = totalPrice;
+      }
+
+      document.getElementById('totalprice').innerHTML = totalPrice;
+
+      $('#itemsJson').val(JSON.stringify(cart));
+
+      {% if thank %}
+        alert('Merci pour votre commande. Nous vous contacterons bientôt pour le paiement et la livraison. Votre commande est {{ order_id }}. Utilisez-le pour suivre votre commande avec notre suivi de commande.');
+        localStorage.clear();  // Vider le panier
+        document.location = "/";
+      {% endif %}
+
+      var test = `${totalPrice}`;
+      document.getElementById("amt").value = test;
+    </script>
+  </div>
+</section>
+
+{% endblock body %}

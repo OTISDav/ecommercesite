@@ -1,0 +1,7 @@
+{% autoescape off %}
+Salut {{ user.username }},
+STP clique sur ce lien pour veifier votre compte :
+<a href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}" target="_blank">
+    clique ici !!
+</a>
+{% endautoescape %}

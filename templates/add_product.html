@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Vendre votre produit
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Vendre votre produit</h2>
+
+    <!-- Affichage des messages -->
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+
+    <!-- Formulaire d'ajout de produit -->
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Affichage du formulaire en utilisant la méthode as_p -->
+
+        <button type="submit" class="btn btn-primary">Ajouter le produit</button>
+    </form>
+</div>
+{% endblock %}
